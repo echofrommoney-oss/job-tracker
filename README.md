@@ -3,6 +3,10 @@
 A production-ready REST API for tracking job applications through their lifecycle.
 Built with **FastAPI**, **PostgreSQL**, **Redis**, **SQLAlchemy 2.0 (async)**, **Alembic**, and **Docker**, with a minimal HTML dashboard included.
 
+[![tests](https://github.com/echofrommoney-oss/job-tracker/actions/workflows/test.yml/badge.svg)](https://github.com/echofrommoney-oss/job-tracker/actions/workflows/test.yml)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://web-production-6efbf.up.railway.app/)
+[![Python](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/)
+
 [🇬🇧 English](#english) · [🇹🇼 繁體中文](#繁體中文)
 
 ---
@@ -27,20 +31,20 @@ This project was built as a demonstration of clean, production-grade Python back
 
 | Resource | URL |
 |---|---|
-| **Dashboard UI** | https://job-tracker.up.railway.app/ |
-| **Swagger UI**   | https://job-tracker.up.railway.app/docs |
-| **ReDoc**        | https://job-tracker.up.railway.app/redoc |
-| **OpenAPI JSON** | https://job-tracker.up.railway.app/openapi.json |
-| **Health check** | https://job-tracker.up.railway.app/health |
+| **Dashboard UI** | https://web-production-6efbf.up.railway.app/ |
+| **Swagger UI**   | https://web-production-6efbf.up.railway.app/docs |
+| **ReDoc**        | https://web-production-6efbf.up.railway.app/redoc |
+| **OpenAPI JSON** | https://web-production-6efbf.up.railway.app/openapi.json |
+| **Health check** | https://web-production-6efbf.up.railway.app/health |
 
 Quick try:
 
 ```bash
-curl -X POST https://job-tracker.up.railway.app/api/v1/jobs \
+curl -X POST https://web-production-6efbf.up.railway.app/api/v1/jobs \
   -H "Content-Type: application/json" \
   -d '{"company":"Acme","position":"Backend Engineer","status":"applied"}'
 
-curl https://job-tracker.up.railway.app/api/v1/dashboard
+curl https://web-production-6efbf.up.railway.app/api/v1/dashboard
 ```
 
 ### Screenshots
@@ -235,20 +239,20 @@ The repo includes `railway.toml` and `Procfile`. Railway detects both automatica
 
 | 資源 | URL |
 |---|---|
-| **Dashboard 頁面**   | https://job-tracker.up.railway.app/ |
-| **Swagger UI**       | https://job-tracker.up.railway.app/docs |
-| **ReDoc**            | https://job-tracker.up.railway.app/redoc |
-| **OpenAPI JSON**     | https://job-tracker.up.railway.app/openapi.json |
-| **健康檢查**         | https://job-tracker.up.railway.app/health |
+| **Dashboard 頁面**   | https://web-production-6efbf.up.railway.app/ |
+| **Swagger UI**       | https://web-production-6efbf.up.railway.app/docs |
+| **ReDoc**            | https://web-production-6efbf.up.railway.app/redoc |
+| **OpenAPI JSON**     | https://web-production-6efbf.up.railway.app/openapi.json |
+| **健康檢查**         | https://web-production-6efbf.up.railway.app/health |
 
 快速試用：
 
 ```bash
-curl -X POST https://job-tracker.up.railway.app/api/v1/jobs \
+curl -X POST https://web-production-6efbf.up.railway.app/api/v1/jobs \
   -H "Content-Type: application/json" \
   -d '{"company":"Acme","position":"後端工程師","status":"applied"}'
 
-curl https://job-tracker.up.railway.app/api/v1/dashboard
+curl https://web-production-6efbf.up.railway.app/api/v1/dashboard
 ```
 
 ### 截圖
