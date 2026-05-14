@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job Application Tracker</title>
+  <style>
+    :root {
+      --bg: #f7f7f9;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+
+      --applied: #3b82f6;
+      --interview: #f59e0b;
+      --offer: #10b981;
+      --rejected: #9ca3af;
+      --wishlist: #a78bfa;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 32px 24px;
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1 {
+      margin: 0 0 24px;
+      font-size: 24px;
+    }
+    h2 {
+      font-size: 16px;
+      margin: 32px 0 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .stat-accent { height: 3px; border-radius: 2px; margin-top: 8px; background: var(--border); }
+    .stat-accent.applied   { background: var(--applied); }
+    .stat-accent.interview { background: var(--interview); }
+    .stat-accent.offer     { background: var(--offer); }
+    .stat-accent.rejected  { background: var(--rejected); }
+    .stat-accent.wishlist  { background: var(--wishlist); }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    thead th {
+      background: #f9fafb;
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      text-transform: capitalize;
+    }
+    .badge-applied   { background: var(--applied); }
+    .badge-interview { background: var(--interview); }
+    .badge-offer     { background: var(--offer); }
+    .badge-rejected  { background: var(--rejected); }
+    .badge-wishlist  { background: var(--wishlist); }
+
+    .muted { color: var(--muted); }
+    .empty {
+      padding: 32px;
+      text-align: center;
+      color: var(--muted);
+      background: var(--card);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+    }
+    .error {
+      padding: 16px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Job Application Tracker</h1>
+
+  <div id="error" class="error" style="display:none"></div>
+
+  <h2>Overview</h2>
+  <div id="stats" class="stats"></div>
+
+  <h2>Jobs</h2>
+  <div id="jobs"></div>
+
+  <script>
+    const STATUSES = ["wishlist", "applied", "interview", "offer", "rejected"];
+
+    function fmtDate(s) {
+      if (!s) return "";
+      const d = new Date(s);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function fmtSalary(min, max) {
+      if (min == null && max == null) return "";
+      const f = (n) => n.toLocaleString();
+      if (min != null && max != null) return `${f(min)}–${f(max)}`;
+      return f(min ?? max);
+    }
+
+    function renderStats(stats) {
+      const container = document.getElementById("stats");
+      const cards = [
+        { label: "Total", value: stats.total, accent: "" },
+        ...STATUSES.map((s) => ({
+          label: s,
+          value: stats.by_status[s] ?? 0,
+          accent: s,
+        })),
+        { label: "Response Rate", value: `${stats.response_rate.toFixed(1)}%`, accent: "" },
+        {
+          label: "Avg Days to Response",
+          value: stats.avg_days_to_response == null ? "—" : stats.avg_days_to_response.toFixed(1),
+          accent: "",
+        },
+      ];
+      container.innerHTML = cards
+        .map(
+          (c) => `
+            <div class="stat">
+              <div class="stat-label">${c.label}</div>
+              <div class="stat-value">${c.value}</div>
+              <div class="stat-accent ${c.accent}"></div>
+            </div>`
+        )
+        .join("");
+    }
+
+    function renderJobs(jobs) {
+      const container = document.getElementById("jobs");
+      if (!jobs.length) {
+        container.innerHTML = `<div class="empty">No jobs yet. POST to /api/v1/jobs to add one.</div>`;
+        return;
+      }
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Company</th>
+              <th>Position</th>
+              <th>Status</th>
+              <th>Location</th>
+              <th>Salary</th>
+              <th>Applied</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${jobs
+              .map(
+                (j) => `
+                  <tr>
+                    <td>${escapeHtml(j.company)}</td>
+                    <td>${escapeHtml(j.position)}</td>
+                    <td><span class="badge badge-${j.status}">${j.status}</span></td>
+                    <td class="muted">${escapeHtml(j.location ?? "")}</td>
+                    <td class="muted">${fmtSalary(j.salary_min, j.salary_max)}</td>
+                    <td class="muted">${fmtDate(j.applied_at)}</td>
+                  </tr>`
+              )
+              .join("")}
+          </tbody>
+        </table>`;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c]);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("error");
+      el.textContent = msg;
+      el.style.display = "block";
+    }
+
+    async function load() {
+      try {
+        const [statsRes, jobsRes] = await Promise.all([
+          fetch("/api/v1/dashboard"),
+          fetch("/api/v1/jobs"),
+        ]);
+        if (!statsRes.ok || !jobsRes.ok) throw new Error("API request failed");
+        const stats = await statsRes.json();
+        const jobs = await jobsRes.json();
+        renderStats(stats);
+        renderJobs(jobs);
+      } catch (e) {
+        showError(`Failed to load: ${e.message}`);
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
