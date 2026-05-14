@@ -16,28 +16,28 @@ TEST_DATABASE_URL = os.getenv(
 )
 
 
-@pytest_asyncio.fixture(scope="session", loop_scope="session")
-async def engine():
+@pytest_asyncio.fixture
+async def engine() -> AsyncIterator:
     engine = create_async_engine(TEST_DATABASE_URL, future=True)
-    yield engine
-    await engine.dispose()
-
-
-@pytest_asyncio.fixture(loop_scope="session")
-async def db_session(engine) -> AsyncIterator[AsyncSession]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-
     await safe_delete(DASHBOARD_CACHE_KEY)
+    try:
+        yield engine
+    finally:
+        await engine.dispose()
 
+
+@pytest_asyncio.fixture
+async def db_session(engine) -> AsyncIterator[AsyncSession]:
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
     async with SessionLocal() as session:
         yield session
 
 
-@pytest_asyncio.fixture(loop_scope="session")
-async def client(engine, db_session) -> AsyncIterator[AsyncClient]:
+@pytest_asyncio.fixture
+async def client(engine) -> AsyncIterator[AsyncClient]:
     SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
 
     async def override_get_db() -> AsyncIterator[AsyncSession]:
